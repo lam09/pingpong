@@ -45,6 +45,8 @@ bool PlayLayer::init()
 	PhysicsBody* bulletBody = PhysicsBody::createCircle(bullet->getContentSize().height/2);
 	bulletBody->setDynamic(true);
 	bulletBody->setTag(BALL_TAG);
+	bulletBody->setCategoryBitmask(BALL_CATEGORY_BITMASK);
+	bulletBody->setCollisionBitmask(BALL_COLLISION_BITMASK);
 	bullet->setPhysicsBody(bulletBody);
 	bulletBody->setVelocity(Vec2(0, 300));
 	this->addChild(bullet);
@@ -60,19 +62,9 @@ bool PlayLayer::init()
 
 	Box* box = new Box(this,Vec2(150,200));
 	map.insert(box->boxBody, box);
-//	Box* box1 = new Box(this, Vec2(350, 400));
-//	map.insert(box1->boxBody, box1);
+	Box* box1 = new Box(this, Vec2(350, 400));
+	map.insert(box1->boxBody, box1);
 
-
-	Sprite *b = Sprite::create();
-	b->setContentSize(Size(BOX_SIZE, BOX_SIZE));
-	b->setPosition(Vec2(350, 400));
-	PhysicsBody* boxBody = PhysicsBody::createBox(b->getContentSize());
-	boxBody->setDynamic(false);
-	boxBody->setRotationEnable(false);
-	boxBody->setTag(BOX_TAG);
-	b->setPhysicsBody(boxBody);
-	this->addChild(b);
 
 
 	//event, action listenner
