@@ -12,7 +12,7 @@
 #include "cocos2d.h"
 #include "SceneManager.h"
 #include "Config.h"
-#include "Box.h"
+#include "GameItem.h"
 USING_NS_CC;
 
 class PlayLayer : public Layer
@@ -23,16 +23,26 @@ public:
 	static Scene* createScene();
     virtual bool init();
     void back(Object* pSender);
-    
+	void initBackground();
+	void spawBoxes();
+	void shot();
+
 	void onTouchEnded(cocos2d::Touch* touches, cocos2d::Event* event);
 	void onTouchMoved(cocos2d::Touch* touches, cocos2d::Event* event);
 	bool onTouchBegan(cocos2d::Touch* touches, cocos2d::Event* event);
 
 	bool onContactBegin(const PhysicsContact& contact);
+	void onContactSeparate(const PhysicsContact& contact);
+	
     CREATE_FUNC(PlayLayer);
 
-	Map< PhysicsBody*, Box*> map;
-
+	Map< PhysicsBody*, GameItem*> map;
+	Scene* scene;
+	Sprite* gun;
+	Sprite* bg;
+	bool canShot = true;
+	Vec2 gunOrientation= Vec2(50, 50);
+	
 };
 
 #endif //* defined(__MenuTutorial__PlayerLayer__) */
