@@ -11,6 +11,7 @@ public:
 
 	Label* numLabel;
 	int count;
+	void goDown();
 
 	virtual void onTouch(Layer* layer1);
 	//CREATE_FUNC(Box);

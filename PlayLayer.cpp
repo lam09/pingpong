@@ -23,7 +23,7 @@ Scene* PlayLayer::createScene() {
 	auto layer = PlayLayer::create();
 	scene->addChild(layer);
 	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
-	//scene->getPhysicsWorld()->setGravity(Vec2(0, 0));
+	scene->getPhysicsWorld()->setGravity(Vec2(0, 0));
 	
 	//scene->getPhysicsBody()->setContactTestBitmask(0xff);
 	//layer->SetPhysicsWorld(scene->getPhysicsWorld());
@@ -66,12 +66,6 @@ bool PlayLayer::init()
 	
 	this->addChild(gun);
 
-
-
-	
-
-
-
 	//event, action listenner
 	auto dispatcher = Director::getInstance()->getEventDispatcher();
 	auto listener = EventListenerTouchOneByOne::create();
@@ -104,14 +98,28 @@ void PlayLayer::initBackground() {
 	this->addChild(bg);
 }
 void PlayLayer::spawBoxes() {
-	Vec2 bgTopConnerLeftPos = Vec2(bg->getPosition().x-bg->getContentSize().width/2+BOX_SIZE/2, bg->getPosition().y+bg->getContentSize().height/2+BOX_SIZE);
+	Vec2 bgTopConnerLeftPos = Vec2(bg->getPosition().x-bg->getContentSize().width/2+BOX_SIZE/2, bg->getPosition().y+bg->getContentSize().height/2+BOX_SIZE/2);
 	log("%f %f", bgTopConnerLeftPos.x, bgTopConnerLeftPos.y);
 	for (int i = 0; i < ROW_ITEM_COUNT; i++) {
-
+		if (rand() % ROW_ITEM_COUNT < 3) {
+			GameItem* box = new Box(this, Vec2(bgTopConnerLeftPos.x + i * BOX_SIZE, bgTopConnerLeftPos.y), 10);
+			map.insert(box->itemBody, box);
+		}
 	}
 
-	GameItem* box = new Box(this, bgTopConnerLeftPos, 10);
-	map.insert(box->itemBody, box);
+	for (Map< PhysicsBody*, GameItem*>::iterator itr = map.begin(); itr != map.end(); ++itr) {
+		GameItem* item = itr->second;
+		if (item->itemBody->getTag() == BOX_TAG) {
+			Box* box = (Box*)item;
+			box->goDown();
+/*			Vec2 currentItemPos = item->item->getPosition();
+			Action* moveBoxDownAction = Sequence::create(
+				DelayTime::create(1),
+				MoveTo::create(1.0, Vec2(currentItemPos.x,currentItemPos.y-BOX_SIZE)),
+				NULL);
+			item->item->runAction(moveBoxDownAction);*/
+		}
+	}
 	
 }
 
@@ -122,6 +130,7 @@ void PlayLayer::back(Object* pSender)
 
 bool PlayLayer::onTouchBegan(Touch* touch, Event* event) {
 	log("touched");
+	spawBoxes();
 	return true;
 }
 void PlayLayer::onTouchMoved(Touch* touch, Event* event) {
