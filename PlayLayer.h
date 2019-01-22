@@ -13,6 +13,7 @@
 #include "SceneManager.h"
 #include "Config.h"
 #include "GameItem.h"
+#include "Bullet.h"
 USING_NS_CC;
 
 class PlayLayer : public Layer
@@ -22,16 +23,19 @@ public:
     ~PlayLayer();
 	static Scene* createScene();
     virtual bool init();
+	void update(float dt) override;
     void back(Object* pSender);
 	void initBackground();
 	void spawBoxes();
-	void shot();
-
+	void shot(Vec2 velocity);
+	bool isCanShot();
+	void showGuideLine(Vec2 touchLocation);
 	void onTouchEnded(cocos2d::Touch* touches, cocos2d::Event* event);
 	void onTouchMoved(cocos2d::Touch* touches, cocos2d::Event* event);
 	bool onTouchBegan(cocos2d::Touch* touches, cocos2d::Event* event);
 
 	bool onContactBegin(const PhysicsContact& contact);
+	bool onContactPreSolve(PhysicsContact& contact, PhysicsContactPreSolve& solve);
 	void onContactSeparate(const PhysicsContact& contact);
 	
     CREATE_FUNC(PlayLayer);
@@ -40,7 +44,12 @@ public:
 	Scene* scene;
 	Sprite* gun;
 	Sprite* bg;
+	Bullet*bullet;
+	Size visibleSize;
+	Vec2 currentTouchLoc, prevTouchLoc;
+	bool onShowGuideLine = false;
 	bool canShot = true;
+	int currentPoint = 1;
 	Vec2 gunOrientation= Vec2(50, 50);
 	
 };

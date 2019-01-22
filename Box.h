@@ -12,7 +12,7 @@ public:
 	Label* numLabel;
 	int count;
 	void goDown();
-
+	void goToRest();
 	virtual void onTouch(Layer* layer1);
 	//CREATE_FUNC(Box);
 };

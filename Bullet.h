@@ -13,8 +13,9 @@ public:
 	PhysicsBody* boxBody;*/
 	Vec2 currentVelocity;
 	virtual void onTouch(Layer* layer1);
-	bool isRunning = true;
+	bool isRunning = false;
 	void stop();
+	void shot(Vec2 velocity);
 	//CREATE_FUNC(Box);
 };
 
