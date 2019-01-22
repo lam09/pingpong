@@ -54,8 +54,7 @@ bool PlayLayer::init()
 
 	initBackground();
 	spawBoxes();
-	bullet = new Bullet(this, Vec2(350, 50));
-	map.insert(bullet->itemBody, bullet);
+	
 
 	//event, action listenner
 	auto dispatcher = Director::getInstance()->getEventDispatcher();
@@ -98,16 +97,16 @@ void PlayLayer::update(float dt) {
 	Layer::update(dt);
 	//log("fucking update");
 	if (onShowGuideLine) {
-		//showGuideLine(currentTouchLoc);
+		showGuideLine(currentTouchLoc);
 	}
 }
 
 void PlayLayer::initBackground() {
 	bg = Sprite::create();
-	bg->setContentSize(Size(BOX_SIZE*ROW_ITEM_COUNT+100,BOX_SIZE*COLUNM_ITEM_COUNT+100));
+	bg->setContentSize(Size(BOX_SIZE*ROW_ITEM_COUNT+2*BACKGROUND_BORDER,BOX_SIZE*COLUNM_ITEM_COUNT+ 2*BACKGROUND_BORDER));
 	//BG_MATERIAL bgMaterial;
 	
-	PhysicsBody* bgBody = PhysicsBody::createEdgeBox(bg->getContentSize(), BG_MATERIAL,100.0f);
+	PhysicsBody* bgBody = PhysicsBody::createEdgeBox(bg->getContentSize(), BG_MATERIAL,BACKGROUND_BORDER);
 	bgBody->setDynamic(false);
 	bgBody->setRotationEnable(false);
 	bgBody->setContactTestBitmask(BG_CONTACTTEST_BITMASK);
@@ -115,7 +114,9 @@ void PlayLayer::initBackground() {
 	bgBody->setCollisionBitmask(BG_COLLISION_BITMASK);
 	bgBody->setTag(BG_TAG);
 	bg->setPhysicsBody(bgBody);
-	bg->setPosition(10 + bg->getContentSize().width / 2, 20 + bg->getContentSize().height / 2);
+	bg->setAnchorPoint(Vec2(0, 0));
+	bg->setPosition(Vec2(0, 0));
+	//bg->setPosition(bg->getContentSize().width / 2, bg->getContentSize().height / 2);
 	this->addChild(bg);
 	gun = Sprite::create();
 	gun->setContentSize(Size(BALL_SIZE, BALL_SIZE));
@@ -127,13 +128,17 @@ void PlayLayer::initBackground() {
 	gunBody->setCategoryBitmask(GUN_CATEGORY_BITMASK);
 	gunBody->setCollisionBitmask(GUN_COLLISION_BITMASK);
 	gun->setPhysicsBody(gunBody);
-	gun->setPosition(Vec2(bg->getPosition().x,
-		bg->getPosition().y - bg->getContentSize().height / 2 + gun->getContentSize().height / 2 + 10));
+	gun->setPosition(Vec2(bg->getPosition().x+ bg->getContentSize().width/ 2+ gun->getContentSize().width / 2,
+		bg->getPosition().y + gun->getContentSize().height / 2 + BACKGROUND_BORDER));
 
 	this->addChild(gun);
+	bullet = new Bullet(this, gun->getPosition());
+	map.insert(bullet->itemBody, bullet);
 }
 void PlayLayer::spawBoxes() {
-	Vec2 bgTopConnerLeftPos = Vec2(bg->getPosition().x-bg->getContentSize().width/2+BOX_SIZE/2, bg->getPosition().y+bg->getContentSize().height/2+BOX_SIZE/2);
+	//Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER/2+bg->getPosition().x-bg->getContentSize().width/2+BOX_SIZE/2, BACKGROUND_BORDER / 2 + bg->getPosition().y+bg->getContentSize().height/2+BOX_SIZE/2);
+	spawingInprogress = true;
+	Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER,bg->getContentSize().height- BACKGROUND_BORDER);
 	log("%f %f", bgTopConnerLeftPos.x, bgTopConnerLeftPos.y);
 	for (int i = 0; i < ROW_ITEM_COUNT; i++) {
 		if (rand() % ROW_ITEM_COUNT < 5) {
@@ -262,7 +267,7 @@ void PlayLayer::shot(Vec2 velocity) {
 }
 void PlayLayer::showGuideLine(Vec2 touchLocation) {
 	if (!onShowGuideLine) return;
-	log("showing line %f %f", touchLocation.x, touchLocation.y);
+	//log("showing line %f %f", touchLocation.x, touchLocation.y);
 
 	GuidePoint *point = new GuidePoint(this, gun->getPosition());
 	point->showLine(Vec2(touchLocation.x-gun->getPosition().x, touchLocation.y - gun->getPosition().y));

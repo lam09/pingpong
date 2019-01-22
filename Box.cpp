@@ -6,6 +6,7 @@ Box::Box(Layer* layer,Vec2 position,int point):GameItem(layer,position)
 {
 	item = Sprite::create();
 	item->setContentSize(Size(BOX_SIZE, BOX_SIZE));
+	item->setAnchorPoint(Vec2(0, 0));
 	item->setPosition(Vec2(position.x, position.y));
 	itemBody = PhysicsBody::createBox(item->getContentSize(),BG_MATERIAL);
 	itemBody->setDynamic(false);
@@ -21,9 +22,9 @@ Box::Box(Layer* layer,Vec2 position,int point):GameItem(layer,position)
 	layer->addChild(item);
 
 	count = point;
-	TTFConfig config_font("Marker Felt.ttf", 36);
+	TTFConfig config_font("Marker Felt.ttf", BOX_SIZE/2);
 	numLabel = Label::createWithTTF(config_font, std::to_string(count));
-	numLabel->setPosition(item->getPosition().x , item->getPosition().y);
+	numLabel->setPosition(item->getPosition().x+ BOX_SIZE/2, item->getPosition().y+ BOX_SIZE/2);
 	layer->addChild(numLabel);
 }
 
@@ -41,7 +42,9 @@ void Box::onTouch(Layer* layer)
 		layer->removeChild(numLabel);
 		return;
 	}
+	int i = rand() % 6;
 	numLabel->setString(std::to_string(count));
+	numLabel->setTextColor(colors[i]);
 }
 void Box::goDown() {	
 		Vec2 currentItemPos = item->getPosition();

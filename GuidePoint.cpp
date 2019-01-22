@@ -2,7 +2,7 @@
 GuidePoint::GuidePoint(Layer* layer,Vec2 position):GameItem(layer,position)
 {
 	item = Sprite::create();
-	item->setContentSize(Size(10,10));
+	item->setContentSize(Size(3,3));
 	item->setPosition(position);
 	PhysicsShape* circleShape = PhysicsShapeCircle::create(item->getContentSize().height / 2, BULLET_MATERIAL);
 	circleShape->setMoment(0);
@@ -11,9 +11,9 @@ GuidePoint::GuidePoint(Layer* layer,Vec2 position):GameItem(layer,position)
 	itemBody->setDynamic(true);
 	itemBody->setRotationEnable(false);
 	itemBody->setTag(0);
-	itemBody->setContactTestBitmask(0x00000001);
-	itemBody->setCategoryBitmask(BALL_CATEGORY_BITMASK);
-	itemBody->setCollisionBitmask(BALL_COLLISION_BITMASK);
+	itemBody->setContactTestBitmask(GUIDE_BALL_CONTACTTEST_BITMASK);
+	itemBody->setCategoryBitmask(GUIDE_BALL_CATEGORY_BITMASK);
+	itemBody->setCollisionBitmask(GUIDE_BALL_COLLISION_BITMASK);
 	item->setPhysicsBody(itemBody);
 	layer->addChild(item);
 }
@@ -35,7 +35,7 @@ void GuidePoint::showLine(Vec2 orientation) {
 	});
 	Action* runAndRemove = Sequence::create(
 		go,
-		DelayTime::create(1),
+		DelayTime::create(GUIDE_BALL_LENGTH),
 		deadth,
 		NULL
 	);

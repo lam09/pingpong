@@ -14,6 +14,7 @@ public:
 	void goDown();
 	void goToRest();
 	virtual void onTouch(Layer* layer1);
+	const Color4B colors[6] = {Color4B::BLACK,Color4B::RED,Color4B::ORANGE,Color4B::BLUE,Color4B::GREEN,Color4B::MAGENTA};
 	//CREATE_FUNC(Box);
 };
 
