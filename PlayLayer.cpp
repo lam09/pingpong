@@ -99,6 +99,7 @@ void PlayLayer::update(float dt) {
 	if (onShowGuideLine) {
 		showGuideLine(currentTouchLoc);
 	}
+	if (canSpaw && !spawingInprogress) spawBoxes();
 }
 
 void PlayLayer::initBackground() {
@@ -137,8 +138,8 @@ void PlayLayer::initBackground() {
 }
 void PlayLayer::spawBoxes() {
 	//Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER/2+bg->getPosition().x-bg->getContentSize().width/2+BOX_SIZE/2, BACKGROUND_BORDER / 2 + bg->getPosition().y+bg->getContentSize().height/2+BOX_SIZE/2);
-	spawingInprogress = true;
-	Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER,bg->getContentSize().height- BACKGROUND_BORDER);
+	spawingInprogress = true; canSpaw = false;
+	Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER+BOX_SIZE/2,bg->getContentSize().height- BACKGROUND_BORDER+BOX_SIZE/2);
 	log("%f %f", bgTopConnerLeftPos.x, bgTopConnerLeftPos.y);
 	for (int i = 0; i < ROW_ITEM_COUNT; i++) {
 		if (rand() % ROW_ITEM_COUNT < 5) {
@@ -203,8 +204,10 @@ bool PlayLayer::onContactBegin(const PhysicsContact& contact) {
 			{
 				bullet->stop();
 				if (isCanShot()) {
-					EventCustom event("generate_boxes");
-					_eventDispatcher->dispatchEvent(&event);
+					//EventCustom event("generate_boxes");
+					//_eventDispatcher->dispatchEvent(&event);
+					spawingInprogress = false;
+					canSpaw = true;
 				}
 				return true;
 			}
@@ -217,9 +220,11 @@ bool PlayLayer::onContactPreSolve(PhysicsContact& contact,PhysicsContactPreSolve
 	if (contact.getShapeA()->getBody()->getTag() == 0 || contact.getShapeB()->getBody()->getTag() == 0)solve.setRestitution(1);
 	return true;
 }
+int i = 0;
 void PlayLayer::onContactSeparate(const PhysicsContact& contact) {
-	log("contact ended");
+	log("contact %i ended",i);
 	if (contact.getShapeA()->getBody()->getTag() == 0 || contact.getShapeB()->getBody()->getTag() == 0)return;
+	i++;
 	if (contact.getShapeA()->getBody()->getTag()& ITEM_TAG) map.at(contact.getShapeA()->getBody())->onTouch(this);
 	if (contact.getShapeB()->getBody()->getTag()& ITEM_TAG) map.at(contact.getShapeB()->getBody())->onTouch(this);
 	

@@ -8,9 +8,10 @@ class Box:public GameItem
 public:
 	Box(Layer* layer, Vec2 position,int point);
 	~Box();
-
+	
 	Label* numLabel;
 	int count;
+	bool inSpawing = false;
 	void goDown();
 	void goToRest();
 	virtual void onTouch(Layer* layer1);

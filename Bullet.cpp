@@ -41,11 +41,11 @@ void Bullet::onTouch(Layer* layer)
 		velocity.y = -currentVelocity.y;
 	}
 	*/
-	float speed = velocity.x*velocity.x + velocity.y*velocity.y;
+/*	float speed = velocity.x*velocity.x + velocity.y*velocity.y;
 	float scale = sqrt((BALL_VELOCITY * BALL_VELOCITY) / speed);
 	velocity.x = velocity.x*scale;
 	velocity.y = velocity.y*scale;
-	speed = velocity.x*velocity.x + velocity.y*velocity.y;
+	speed = velocity.x*velocity.x + velocity.y*velocity.y;*/
 //	if (abs(velocity.y) < 20)
 //		if (velocity.y < 0)velocity.y = -20; else velocity.y = 20;
 

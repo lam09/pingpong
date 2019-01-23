@@ -48,7 +48,7 @@ public:
 	Size visibleSize;
 	Vec2 currentTouchLoc, prevTouchLoc;
 	bool onShowGuideLine = false,spawingInprogress=false;
-	bool canShot = true;
+	bool canShot = true, canSpaw = true;;
 	int currentPoint = 1;
 	Vec2 gunOrientation= Vec2(50, 50);
 	
