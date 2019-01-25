@@ -25,6 +25,7 @@ public:
     virtual bool init();
 	void update(float dt) override;
     void back(Object* pSender);
+	void initMenu();
 	void initBackground();
 	void spawBoxes();
 	void shot(Vec2 velocity);

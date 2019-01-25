@@ -23,8 +23,8 @@ Scene* PlayLayer::createScene() {
 	auto scene = Scene::createWithPhysics();
 	auto layer = PlayLayer::create();
 	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
-	scene->getPhysicsWorld()->setGravity(Vec2(0, 0));
-	
+	scene->getPhysicsWorld()->setGravity(Vec2(0, -1));
+	scene->getPhysicsWorld()->setFixedUpdateRate(60);
 	//scene->getPhysicsBody()->setContactTestBitmask(0xff);
 	//layer->SetPhysicsWorld(scene->getPhysicsWorld());
 	scene->addChild(layer);
@@ -41,20 +41,12 @@ bool PlayLayer::init()
 
     visibleSize = Director::getInstance()->getVisibleSize();
 	setContentSize(visibleSize);
-    auto back = MenuItemFont::create("back", CC_CALLBACK_1(PlayLayer::back, this));
-    auto menu = Menu::create(back, NULL);
-    menu->setPosition(visibleSize.width-back->getContentSize().width, visibleSize.height-back->getContentSize().height);
-    this->addChild(menu);
-	/*initBackground();
-	spawBoxes();
-	GameItem* bullet = new Bullet(this, Vec2(350, 50));
-	map.insert(bullet->itemBody, bullet);
-	*/
-	
+    
 
 	initBackground();
-	spawBoxes();
+	//spawBoxes();
 	
+	initMenu();
 
 	//event, action listenner
 	auto dispatcher = Director::getInstance()->getEventDispatcher();
@@ -67,8 +59,9 @@ bool PlayLayer::init()
 	});
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(initListener, this);
 	*/
-	auto generateBoxesListener = EventListenerCustom::create("generate_boxes", [=](EventCustom *event) {
-		spawBoxes();
+	auto generateBoxesListener = EventListenerCustom::create("on_generated_boxes", [=](EventCustom *event) {
+		log("set spawingInprogress to false");
+		spawingInprogress = false;
 	});
 	dispatcher->addEventListenerWithSceneGraphPriority(generateBoxesListener, this);
 
@@ -101,12 +94,17 @@ void PlayLayer::update(float dt) {
 	}
 	if (canSpaw && !spawingInprogress) spawBoxes();
 }
-
+void PlayLayer::initMenu() {
+	auto back = MenuItemFont::create("back", CC_CALLBACK_1(PlayLayer::back, this));
+	auto menu = Menu::create(back, NULL);
+	menu->setPosition(visibleSize.width - back->getContentSize().width, visibleSize.height - back->getContentSize().height);
+	this->addChild(menu);
+}
 void PlayLayer::initBackground() {
 	bg = Sprite::create();
 	bg->setContentSize(Size(BOX_SIZE*ROW_ITEM_COUNT+2*BACKGROUND_BORDER,BOX_SIZE*COLUNM_ITEM_COUNT+ 2*BACKGROUND_BORDER));
-	//BG_MATERIAL bgMaterial;
-	
+	bg->setAnchorPoint(Vec2(0, 0));
+	bg->setPosition(Vec2(0, 0));
 	PhysicsBody* bgBody = PhysicsBody::createEdgeBox(bg->getContentSize(), BG_MATERIAL,BACKGROUND_BORDER);
 	bgBody->setDynamic(false);
 	bgBody->setRotationEnable(false);
@@ -115,12 +113,13 @@ void PlayLayer::initBackground() {
 	bgBody->setCollisionBitmask(BG_COLLISION_BITMASK);
 	bgBody->setTag(BG_TAG);
 	bg->setPhysicsBody(bgBody);
-	bg->setAnchorPoint(Vec2(0, 0));
-	bg->setPosition(Vec2(0, 0));
+	
 	//bg->setPosition(bg->getContentSize().width / 2, bg->getContentSize().height / 2);
 	this->addChild(bg);
 	gun = Sprite::create();
 	gun->setContentSize(Size(BALL_SIZE, BALL_SIZE));
+	gun->setPosition(Vec2(bg->getPosition().x + bg->getContentSize().width / 2 + gun->getContentSize().width / 2,
+		bg->getPosition().y + gun->getContentSize().height / 2 + BACKGROUND_BORDER));
 	PhysicsBody* gunBody = PhysicsBody::createCircle(gun->getContentSize().height / 2);
 	gunBody->setDynamic(false);
 	gunBody->setRotationEnable(false);
@@ -129,18 +128,16 @@ void PlayLayer::initBackground() {
 	gunBody->setCategoryBitmask(GUN_CATEGORY_BITMASK);
 	gunBody->setCollisionBitmask(GUN_COLLISION_BITMASK);
 	gun->setPhysicsBody(gunBody);
-	gun->setPosition(Vec2(bg->getPosition().x+ bg->getContentSize().width/ 2+ gun->getContentSize().width / 2,
-		bg->getPosition().y + gun->getContentSize().height / 2 + BACKGROUND_BORDER));
 
 	this->addChild(gun);
-	bullet = new Bullet(this, gun->getPosition());
-	map.insert(bullet->itemBody, bullet);
+/*	bullet = new Bullet(this, gun->getPosition());
+	map.insert(bullet->itemBody, bullet);*/
 }
 void PlayLayer::spawBoxes() {
 	//Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER/2+bg->getPosition().x-bg->getContentSize().width/2+BOX_SIZE/2, BACKGROUND_BORDER / 2 + bg->getPosition().y+bg->getContentSize().height/2+BOX_SIZE/2);
 	spawingInprogress = true; canSpaw = false;
 	Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER+BOX_SIZE/2,bg->getContentSize().height- BACKGROUND_BORDER+BOX_SIZE/2);
-	log("%f %f", bgTopConnerLeftPos.x, bgTopConnerLeftPos.y);
+	log("spawing boxes started %f %f", bgTopConnerLeftPos.x, bgTopConnerLeftPos.y);
 	for (int i = 0; i < ROW_ITEM_COUNT; i++) {
 		if (rand() % ROW_ITEM_COUNT < 5) {
 			GameItem* box = new Box(this, Vec2(bgTopConnerLeftPos.x + i * BOX_SIZE, bgTopConnerLeftPos.y), currentPoint);
@@ -156,7 +153,21 @@ void PlayLayer::spawBoxes() {
 		}
 	}
 	currentPoint++;
-	
+	//generate new ball
+	bullet = new Bullet(this, gun->getPosition());
+	map.insert(bullet->itemBody, bullet);
+	CallFunc* cb = CallFunc::create([this]() {
+		//EventCustom event("on_generated_boxes");
+		spawingInprogress = false;
+		log("spawing finish");
+		//Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("on_generated_boxes");
+	});
+	Action* cbAction = Sequence::create(
+		DelayTime::create(2),
+		cb,
+		NULL
+	);
+	this->runAction(cbAction);
 }
 
 void PlayLayer::back(Object* pSender)
@@ -166,7 +177,6 @@ void PlayLayer::back(Object* pSender)
 
 bool PlayLayer::onTouchBegan(Touch* touch, Event* event) {
 	log("touched");
-	//spawBoxes();
 	currentTouchLoc = touch->getLocation();
 	onShowGuideLine = true;
 	return true;
@@ -194,21 +204,23 @@ void PlayLayer::onTouchEnded(Touch* touch, Event* event) {
 	log("touch ended");
 }
 bool PlayLayer::onContactBegin(const PhysicsContact& contact) {
-	if (contact.getShapeA()->getBody()->getTag() == BG_TAG || contact.getShapeB()->getBody()->getTag() == BG_TAG) {
+	log("contact triggered");
+	PhysicsBody* a = contact.getShapeA()->getBody();
+	PhysicsBody* b = contact.getShapeB()->getBody();
+	if ((a->getTag()|b->getTag()) == (BG_TAG|BALL_TAG))// || b->getTag() == BG_TAG) {
+	{
 		Bullet* bullet;
-		if (contact.getShapeA()->getBody()->getTag() == BALL_TAG || contact.getShapeB()->getBody()->getTag() == BALL_TAG) {
+		if (a->getTag() == BALL_TAG || b->getTag() == BALL_TAG) {
 			log("ball hit background");
-			if (contact.getShapeA()->getBody()->getTag() == BALL_TAG) bullet = (Bullet*)map.at(contact.getShapeA()->getBody());
-			if (contact.getShapeB()->getBody()->getTag() == BALL_TAG) bullet = (Bullet*)map.at(contact.getShapeB()->getBody());
-			if (bullet->itemBody->getPosition().y <= gun->getPhysicsBody()->getPosition().y)
+			if (a->getTag() == BALL_TAG) bullet = (Bullet*)map.at(a);
+			if (b->getTag() == BALL_TAG) bullet = (Bullet*)map.at(b);
+			if (bullet->itemBody->getPosition().y <= gun->getPhysicsBody()->getPosition().y && bullet->isRunning)
 			{
 				bullet->stop();
-				if (isCanShot()) {
-					//EventCustom event("generate_boxes");
-					//_eventDispatcher->dispatchEvent(&event);
-					spawingInprogress = false;
+				if (isCanShot()) {					
 					canSpaw = true;
 				}
+				else canSpaw = false;
 				return true;
 			}
 		}
@@ -217,19 +229,28 @@ bool PlayLayer::onContactBegin(const PhysicsContact& contact) {
 }
 
 bool PlayLayer::onContactPreSolve(PhysicsContact& contact,PhysicsContactPreSolve& solve) {
+/*	PhysicsBody* a = contact.getShapeA()->getBody();
+	PhysicsBody* b = contact.getShapeB()->getBody();
 	if (contact.getShapeA()->getBody()->getTag() == 0 || contact.getShapeB()->getBody()->getTag() == 0)solve.setRestitution(1);
+	if ((a->getTag() == BOX_TAG && b->getTag() == BALL_TAG) || (b->getTag() == BOX_TAG && a->getTag() == BALL_TAG)) solve.setRestitution(1);
+	if ((a->getTag() == BG_TAG && b->getTag() == BALL_TAG) || (b->getTag() == BG_TAG && a->getTag() == BALL_TAG)) solve.setRestitution(1);
+*/
 	return true;
 }
 int i = 0;
 void PlayLayer::onContactSeparate(const PhysicsContact& contact) {
 	log("contact %i ended",i);
-	if (contact.getShapeA()->getBody()->getTag() == 0 || contact.getShapeB()->getBody()->getTag() == 0)return;
+	PhysicsBody* a = contact.getShapeA()->getBody();
+	PhysicsBody* b = contact.getShapeB()->getBody();
+	//if (a->getTag() == 0 || b->getTag() == 0)return;
 	i++;
-	if (contact.getShapeA()->getBody()->getTag()& ITEM_TAG) map.at(contact.getShapeA()->getBody())->onTouch(this);
-	if (contact.getShapeB()->getBody()->getTag()& ITEM_TAG) map.at(contact.getShapeB()->getBody())->onTouch(this);
-	
+	if ((a->getTag() == BOX_TAG && b->getTag() == BALL_TAG) || (b->getTag() == BOX_TAG && a->getTag() == BALL_TAG)){
+		map.at(a)->onTouch(this);
+		map.at(b)->onTouch(this);
+	}
 }
 bool PlayLayer::isCanShot() {
+	if (spawingInprogress) return false;
 	for (Map< PhysicsBody*, GameItem*>::iterator itr = map.begin(); itr != map.end(); ++itr) {
 		GameItem* item = itr->second;
 		if (item->itemBody->getTag() == BALL_TAG) {
@@ -257,7 +278,7 @@ void PlayLayer::shot(Vec2 velocity) {
 				bullet->shot(velocity);
 			});			
 			double timeToMove = 0.2;
-			double delay = i * 0.2;
+			double delay = i * 0.4;
 			i++;
 			Action* moveToGunAndShot = Sequence::create(
 				DelayTime::create(0.1),

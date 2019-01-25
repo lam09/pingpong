@@ -26,6 +26,7 @@
 //#include "HelloWorldScene.h"
 #include "SceneManager.h"
 #include "Config.h"
+#include "MyBodyParser.h"
 //#include "MenuLayer.h"
 
 // #define USE_AUDIO_ENGINE 1
@@ -120,6 +121,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     register_all_packages();
 
+	MyBodyParser::getInstance()->parseJsonFile("item_bodies/item2");
     // create a scene. it's an autorelease object
 	// auto scene = HelloWorld::createScene();
 	// auto scene = MenuLayer::create();

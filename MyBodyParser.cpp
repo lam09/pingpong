@@ -6,6 +6,7 @@
 //
 
 #include "MyBodyParser.h"
+#include "Config.h"
 
 MyBodyParser* MyBodyParser::getInstance()
 {
@@ -71,8 +72,12 @@ PhysicsBody* MyBodyParser::bodyFormJson(cocos2d::Node *pNode, const std::string&
                             points[pi].x = offx + width * polygons[i][pcount-1-pi]["x"].GetDouble();
                             points[pi].y = offy + width * polygons[i][pcount-1-pi]["y"].GetDouble();
                         }
-						body->addShape(PhysicsShapePolygon::create(points, pcount, material));
-                        delete [] points;
+						PhysicsShapePolygon* piece = PhysicsShapePolygon::create(points, pcount, material,Vec2::ZERO,BALL_SIZE);
+						piece->setMass(PHYSICS_INFINITY);
+						piece->setMoment(PHYSICS_INFINITY);
+						//body->addShape(PhysicsShapePolygon::create(points, pcount, material));
+						body->addShape(piece);
+						delete [] points;
                     }
                 }
                 else

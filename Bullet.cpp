@@ -7,10 +7,13 @@ Bullet::Bullet(Layer* layer, Vec2 position):GameItem(layer,position)
 	item = Sprite::create();
 	item->setContentSize(Size(BALL_SIZE, BALL_SIZE));
 	item->setPosition(position);
+//	itemBody=PhysicsBody::createEdgeBox(item->getContentSize(), BULLET_MATERIAL, BALL_SIZE / 2);
+
 	PhysicsShape* circleShape = PhysicsShapeCircle::create(item->getContentSize().height / 2, BULLET_MATERIAL);
 	circleShape->setMoment(0);
 	itemBody = PhysicsBody::create();
 	itemBody->addShape(circleShape);
+	itemBody->setMoment(0);
 	itemBody->setDynamic(true);
 	itemBody->setRotationEnable(false);
 	itemBody->setTag(BALL_TAG);
@@ -30,7 +33,6 @@ Bullet::~Bullet()
 void Bullet::onTouch(Layer* layer)
 {
 	if (!isRunning) return;
-	log("bullet is running");
 	Vec2 velocity = item->getPhysicsBody()->getVelocity();
 /*	if (currentVelocity.x * velocity.x < 0 && currentVelocity.y * velocity.y > 0) {
 		velocity.x = -currentVelocity.x;
