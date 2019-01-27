@@ -8,15 +8,17 @@
 
 #include "MenuLayer.h"
 #include "SceneManager.h"
+#include "GameConfiguration.h"
 USING_NS_CC;
 
 bool MenuLayer::init()
 {
-    if ( !Layer::init() )
+    if ( !LayerColor::initWithColor(Color4B::WHITE) )
     {
         return false;
     }
-    
+	//Director::getInstance()->setClearColor(Color4F::WHITE);
+	//setColor(Color3B::WHITE);
     Size visibleSize = Director::getInstance()->getVisibleSize();
     float delayTime = 0.3f;
     
@@ -24,6 +26,7 @@ bool MenuLayer::init()
     TTFConfig config_font52("Marker Felt.ttf", 52);
     
     Label *titleLeft = Label::createWithTTF(config_font96, "Menu ");
+	titleLeft->setColor(Color3B::BLACK);
     Label *titleRight = Label::createWithTTF(config_font96, " System");
     Label *titleQuotes = Label::createWithTTF(config_font96, "\"                        \"");
     Label *titleCenterTop = Label::createWithTTF(config_font52, "How to build a...");
@@ -91,6 +94,21 @@ bool MenuLayer::init()
 		each->runAction(action);
 	}
     this->addChild(menu, 2);
+	//GameConfiguration::setSound(true);
+	
+	auto soundBtn = Sprite::create("sound_enabled");
+	auto touchListenner = EventListenerTouchOneByOne::create();
+	touchListenner->onTouchBegan = [=](Touch*touch,Event* event) {
+		auto target = static_cast<Sprite*>(event->getCurrentTarget());
+		Point locationInNode = target->convertToNodeSpace(touch->getLocation());
+		Size s = target->getContentSize();
+		Rect rect = Rect(0, 0, s.width, s.height);
+		if (rect.containsPoint(locationInNode)) {
+			//GameConfiguration::sound_enabled = !GameConfiguration::sound_enabled;
+			soundBtn->setTexture("sound_disabled");
+		}
+		return true;
+	};
 
     return true;
 }

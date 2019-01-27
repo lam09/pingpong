@@ -11,7 +11,7 @@
 
 #include "cocos2d.h"
 USING_NS_CC;
-class MenuLayer : public Layer
+class MenuLayer : public LayerColor
 {
 public:
     bool init();

@@ -30,6 +30,7 @@ public:
 	void spawBoxes();
 	void shot(Vec2 velocity);
 	bool isCanShot();
+	void rotateGun();
 	void showGuideLine(Vec2 touchLocation);
 	void onTouchEnded(cocos2d::Touch* touches, cocos2d::Event* event);
 	void onTouchMoved(cocos2d::Touch* touches, cocos2d::Event* event);
@@ -47,7 +48,7 @@ public:
 	Sprite* bg;
 	Bullet*bullet;
 	Size visibleSize;
-	Vec2 currentTouchLoc, prevTouchLoc;
+	Vec2 currentTouchLoc=Vec2(0,0), prevTouchLoc;
 	bool onShowGuideLine = false,spawingInprogress=false;
 	bool canShot = true, canSpaw = true;;
 	int currentPoint = 1;

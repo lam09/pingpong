@@ -22,8 +22,8 @@ PlayLayer::~PlayLayer()
 Scene* PlayLayer::createScene() {
 	auto scene = Scene::createWithPhysics();
 	auto layer = PlayLayer::create();
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
-	scene->getPhysicsWorld()->setGravity(Vec2(0, -1));
+	//scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	scene->getPhysicsWorld()->setGravity(Vec2(0, -10));
 	scene->getPhysicsWorld()->setFixedUpdateRate(60);
 	//scene->getPhysicsBody()->setContactTestBitmask(0xff);
 	//layer->SetPhysicsWorld(scene->getPhysicsWorld());
@@ -101,10 +101,16 @@ void PlayLayer::initMenu() {
 	this->addChild(menu);
 }
 void PlayLayer::initBackground() {
+	Sprite* backgroundImage = Sprite::create("background.png");
+	backgroundImage->setContentSize(visibleSize);
+	backgroundImage->setAnchorPoint(Vec2(0, 0));
+	backgroundImage->setPosition(Vec2(0, 0));
+	backgroundImage->setLocalZOrder(1);
+	this->addChild(backgroundImage);
 	bg = Sprite::create();
-	bg->setContentSize(Size(BOX_SIZE*ROW_ITEM_COUNT+2*BACKGROUND_BORDER,BOX_SIZE*COLUNM_ITEM_COUNT+ 2*BACKGROUND_BORDER));
+	bg->setContentSize(Size(BOX_SIZE*ROW_ITEM_COUNT+2*BACKGROUND_BORDER,BOX_SIZE*COLUNM_ITEM_COUNT+ 3*BACKGROUND_BORDER));
 	bg->setAnchorPoint(Vec2(0, 0));
-	bg->setPosition(Vec2(0, 0));
+	bg->setPosition(Vec2(0, -BACKGROUND_BORDER));
 	PhysicsBody* bgBody = PhysicsBody::createEdgeBox(bg->getContentSize(), BG_MATERIAL,BACKGROUND_BORDER);
 	bgBody->setDynamic(false);
 	bgBody->setRotationEnable(false);
@@ -116,11 +122,12 @@ void PlayLayer::initBackground() {
 	
 	//bg->setPosition(bg->getContentSize().width / 2, bg->getContentSize().height / 2);
 	this->addChild(bg);
-	gun = Sprite::create();
-	gun->setContentSize(Size(BALL_SIZE, BALL_SIZE));
-	gun->setPosition(Vec2(bg->getPosition().x + bg->getContentSize().width / 2 + gun->getContentSize().width / 2,
-		bg->getPosition().y + gun->getContentSize().height / 2 + BACKGROUND_BORDER));
-	PhysicsBody* gunBody = PhysicsBody::createCircle(gun->getContentSize().height / 2);
+	gun = Sprite::create("gun.png");
+	gun->setLocalZOrder(3);
+	//gun->setContentSize(Size(BALL_SIZE, BALL_SIZE));
+	gun->setPosition(Vec2(bg->getPosition().x + bg->getContentSize().width / 2 /*- gun->getContentSize().width / 2*/,
+		bg->getPosition().y /* gun->getContentSize().height / 2*/ + BACKGROUND_BORDER));
+/*	PhysicsBody* gunBody = PhysicsBody::createCircle(gun->getContentSize().height / 2);
 	gunBody->setDynamic(false);
 	gunBody->setRotationEnable(false);
 	gunBody->setTag(BG_TAG);
@@ -128,18 +135,26 @@ void PlayLayer::initBackground() {
 	gunBody->setCategoryBitmask(GUN_CATEGORY_BITMASK);
 	gunBody->setCollisionBitmask(GUN_COLLISION_BITMASK);
 	gun->setPhysicsBody(gunBody);
-
+	*/
+	gun->setAnchorPoint(Vec2(0.5,0.17647));
 	this->addChild(gun);
+	//gun->setRotation(90);
 /*	bullet = new Bullet(this, gun->getPosition());
 	map.insert(bullet->itemBody, bullet);*/
+	Sprite* backgroundBottom = Sprite::create("backgroundBottom.png");
+	backgroundBottom->setLocalZOrder(4);
+	backgroundBottom->setContentSize(Size(visibleSize.width,BACKGROUND_BORDER+100));
+	backgroundBottom->setAnchorPoint(Vec2(0, 0));
+	backgroundBottom->setPosition(Vec2(0, -BACKGROUND_BORDER));
+	this->addChild(backgroundBottom);
 }
 void PlayLayer::spawBoxes() {
 	//Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER/2+bg->getPosition().x-bg->getContentSize().width/2+BOX_SIZE/2, BACKGROUND_BORDER / 2 + bg->getPosition().y+bg->getContentSize().height/2+BOX_SIZE/2);
 	spawingInprogress = true; canSpaw = false;
-	Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER+BOX_SIZE/2,bg->getContentSize().height- BACKGROUND_BORDER+BOX_SIZE/2);
+	Vec2 bgTopConnerLeftPos = Vec2(BACKGROUND_BORDER+BOX_SIZE/2,bg->getContentSize().height- BACKGROUND_BORDER/*+BOX_SIZE/2*/);
 	log("spawing boxes started %f %f", bgTopConnerLeftPos.x, bgTopConnerLeftPos.y);
 	for (int i = 0; i < ROW_ITEM_COUNT; i++) {
-		if (rand() % ROW_ITEM_COUNT < 5) {
+		if (rand() % ROW_ITEM_COUNT < 2) {
 			GameItem* box = new Box(this, Vec2(bgTopConnerLeftPos.x + i * BOX_SIZE, bgTopConnerLeftPos.y), currentPoint);
 			map.insert(box->itemBody, box);
 		}
@@ -174,17 +189,23 @@ void PlayLayer::back(Object* pSender)
 {
     SceneManager::goMenu();
 }
+void PlayLayer::rotateGun() {
+	Vec2 rotation = Vec2(currentTouchLoc.x - gun->getPosition().x, currentTouchLoc.y - gun->getPosition().y);
+	float degree = (rotation.x*rotation.y>0) ? 90 - atan(rotation.y / rotation.x) * 180 / 3.14 :270- atan(rotation.y / rotation.x) * 180 / 3.14;
+	gun->setRotation(degree);
+}
 
 bool PlayLayer::onTouchBegan(Touch* touch, Event* event) {
-	log("touched");
 	currentTouchLoc = touch->getLocation();
+
+	rotateGun();
 	onShowGuideLine = true;
 	return true;
 }
 void PlayLayer::onTouchMoved(Touch* touch, Event* event) {
 	log("touch moving");
 	currentTouchLoc = touch->getLocation();
-
+	rotateGun();
 }
 void PlayLayer::onTouchEnded(Touch* touch, Event* event) {
 	onShowGuideLine = false;
@@ -200,8 +221,20 @@ void PlayLayer::onTouchEnded(Touch* touch, Event* event) {
 	velocity.x = velocity.x*scale;
 	velocity.y = velocity.y*scale;	
 	float length = velocity.x*velocity.x + velocity.y*velocity.y;
-	if(isCanShot())shot(velocity);
-	log("touch ended");
+	if (isCanShot()) {
+		for (Map< PhysicsBody*, GameItem*>::iterator itr = map.begin(); itr != map.end(); ++itr) {
+			GameItem* item = itr->second;
+			if (item->itemBody->getTag() == BOX_TAG) {
+				Box* box = (Box*)item;
+				if (box->isDeadth) {
+					map.erase(box->itemBody);
+					delete box;
+				}
+			}
+		}
+		shot(velocity);
+	}
+		log("touch ended");
 }
 bool PlayLayer::onContactBegin(const PhysicsContact& contact) {
 	log("contact triggered");
@@ -214,7 +247,7 @@ bool PlayLayer::onContactBegin(const PhysicsContact& contact) {
 			log("ball hit background");
 			if (a->getTag() == BALL_TAG) bullet = (Bullet*)map.at(a);
 			if (b->getTag() == BALL_TAG) bullet = (Bullet*)map.at(b);
-			if (bullet->itemBody->getPosition().y <= gun->getPhysicsBody()->getPosition().y && bullet->isRunning)
+			if (bullet->itemBody->getPosition().y <= gun->getPosition().y+gun->getContentSize().height/2 && bullet->isRunning)
 			{
 				bullet->stop();
 				if (isCanShot()) {					
@@ -278,7 +311,7 @@ void PlayLayer::shot(Vec2 velocity) {
 				bullet->shot(velocity);
 			});			
 			double timeToMove = 0.2;
-			double delay = i * 0.4;
+			double delay = i * 0.1;
 			i++;
 			Action* moveToGunAndShot = Sequence::create(
 				DelayTime::create(0.1),

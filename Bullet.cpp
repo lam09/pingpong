@@ -4,7 +4,8 @@
 
 Bullet::Bullet(Layer* layer, Vec2 position):GameItem(layer,position)
 {
-	item = Sprite::create();
+	item = Sprite::create("Ball.png");
+	item->setLocalZOrder(2);
 	item->setContentSize(Size(BALL_SIZE, BALL_SIZE));
 	item->setPosition(position);
 //	itemBody=PhysicsBody::createEdgeBox(item->getContentSize(), BULLET_MATERIAL, BALL_SIZE / 2);

@@ -8,12 +8,14 @@ Vec2 offsets[6] = { Vec2(-BOX_SIZE / 4,-BOX_SIZE / 4) ,Vec2(-BOX_SIZE / 4,BOX_SI
 Box::Box(Layer* layer,Vec2 position,int point):GameItem(layer,position)
 {
 	//item = Sprite::create("item_bodies/citron.png");
-	item = Sprite::create();
+	item = Sprite::create("wall_4.png");
+	item->setLocalZOrder(2);
 	item->setContentSize(Size(BOX_SIZE, BOX_SIZE));
 	item->setAnchorPoint(Vec2(0.5, 0.5));
 	item->setPosition(Vec2(position.x, position.y));
 	
 	int shapeId = rand() % 5 + 1;
+	shapeId = 5;
 	itemBody = MyBodyParser::getInstance()->bodyFormJson(item, std::to_string(shapeId), BG_MATERIAL);
 	
 	//itemBody = PhysicsBody::createBox(item->getContentSize(),BG_MATERIAL);
@@ -34,9 +36,11 @@ Box::Box(Layer* layer,Vec2 position,int point):GameItem(layer,position)
 	layer->addChild(item);
 
 	count = point;
-	TTFConfig config_font("Marker Felt.ttf", BOX_SIZE/3);
+	TTFConfig config_font("Marker Felt.ttf", BOX_SIZE/2);
 	numLabel = Label::createWithTTF(config_font, std::to_string(count));
-
+	numLabel->setTextColor(Color4B::RED);
+	numLabel->setLocalZOrder(2);
+	//shapeId = rand() % 5 + 1;
 	numLabel->setPosition(item->getPosition().x+offsets[shapeId-1].x, item->getPosition().y + offsets[shapeId - 1].y);
 	layer->addChild(numLabel);
 }
@@ -58,7 +62,10 @@ void Box::onTouch(Layer* layer)
 	
 	int i = rand() % 6;
 	log("current count %d",count);
-
+	Action* scale = Sequence::create(ScaleTo::create(0.1, 0.8),
+		ScaleTo::create(0.1, 1.0),
+		NULL);
+	item->runAction(scale);
 	numLabel->setString(std::to_string(count));
 	numLabel->setTextColor(colors[i]);
 }
@@ -87,9 +94,10 @@ void Box::goToRest() {
 	auto explosionEffect = ParticleFireworks::create();
 	explosionEffect->setDuration(0.1);
 	explosionEffect->setPosition(Vec2(item->getPosition().x + BOX_SIZE / 2, item->getPosition().y - BOX_SIZE / 2));
+	explosionEffect->setLocalZOrder(2);
 	item->getParent()->addChild(explosionEffect);
 	PlayLayer* layer = (PlayLayer*)item->getParent();
-	
+	isDeadth = true;
 	item->getParent()->removeChild(numLabel);
 	item->getParent()->removeChild(item);
 
